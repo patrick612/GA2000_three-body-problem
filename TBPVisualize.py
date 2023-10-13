@@ -5,16 +5,19 @@ from TBPSimulate import *
 from TBPData import *
 from TBPConsts import *
 
-ps = [Particle(0,[-1,0,0],[0,0.5,0],1,0),Particle(0,[1,0,0],[0,-0.5,0],1,1),Particle(0,[1.1,0,0],[0.1,-1/0.1**0.5,0],0.00001,2)]
-solv = EulerFirst(ps)
+ps = ParticleData()
+ps+=[1,[-1,0,0],[0,0.5,0]]
+ps+=[1,[1,0,0],[0,-0.5,0]]
 
-simulate(ps, solv, 0.001, tfinal=6*np.pi)
+solv = RK4(ps)
 
-for p in ps:
-    ts = p.timeseries.ts
-    xs = [q[0] for q in p.timeseries.poss]
-    ys = [q[1] for q in p.timeseries.poss]
-    plt.scatter(xs,ys, sizes=ts)
+simulate(ps, solv, 0.001, tfinal=2*np.pi)
+
+for p in range(ps.state.shape[0]//2):
+    ts = ps.timeseries.ts
+    xs = [i[2*p,0] for i in ps.timeseries.states]
+    ys = [i[2*p,1] for i in ps.timeseries.states]
+    plt.scatter(xs,ys)
 
 plt.axis('equal')
 plt.show()
