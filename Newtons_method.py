@@ -33,18 +33,12 @@ plt.show
 def newton_root(t, e):
     epsilon = 1/np.power(10, 5)
     phi = np.random.rand(1)[0] * np.pi
-    print('initial phi is, ', phi)
     while True:
         diff = np.absolute(two_body_time(phi, e) -t)
         if epsilon>= diff:
             break
         phi = phi - (two_body_time(phi, e)-t)/two_body_time_deriv(phi, e)
 
-        print('phi is', phi)
-        print('movement is ', two_body_time(phi, e)/two_body_time_deriv(phi, e))
-        print('diff is', diff)
-        print('two body time is ', two_body_time(phi, e))
-        print('two body time deriv is ', two_body_time_deriv(phi, e))
     return phi
 
 def radius(t, a, e):
