@@ -12,7 +12,7 @@ R2=M1/(M1+M2)*a
 Omega = (G*(M1+M2)/a**3)**0.5
 
 dims=((-20.0,20.0),(-20.0,20.0))
-N=401
+N=1001
 
 xs=np.linspace(*dims[0],N)
 ys=np.linspace(*dims[1],N)
@@ -30,7 +30,7 @@ arr = U(x,y)
 L_points=[]
 for i in range(1,N-1):
     if U(xs[i],0)>=U(xs[i-1],0) and U(xs[i],0)>U(xs[i+1],0):
-        L_points+=[(i*(dims[0][1]-dims[0][0])/xs.shape[0]+dims[0][0],0)]
+        L_points+=[(pos(i,0)[0],0)]
 #Reorder
 L_points = [L_points[i] for i in [1,2,0]]
 #Add L4 and L5
