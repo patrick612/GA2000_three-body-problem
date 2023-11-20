@@ -4,20 +4,29 @@ class Solver:
     def __init__(self,stateobj):
         self.data = stateobj
 
-    def ds(self,state):
-        f = np.zeros(state.shape)
-        for p in range(state.shape[0]//2):
-            f[2*p]=state[2*p+1]
-            for q in range(state.shape[0]//2):
-                if p!=q:
-                    dqp = state[2*q]-state[2*p]
-                    f[2*p+1]+=G*self.data.masses[q]*dqp/(np.linalg.norm(dqp))**3
+    def x(self,state):
+        return state[:self.data.n]
+
+    def v(self,state):
+        return state[self.data.n:]
+    
+    def a(self,state):
+        xs=self.x(state)
+        f = np.zeros((self.data.n,3))
+        for i in range(self.data.n):
+            for j in range(self.data.n):
+                if i!=j:
+                    dij = xs[j]-xs[i]
+                    f[i]+=G*self.data.masses[j]*dij/(np.linalg.norm(dij))**3
         return f
+
+    def ds(self,state):
+        return np.concatenate((self.v(state),self.a(state)), axis=0)
     
 class EulerFirst(Solver):
     def __call__(self,dt):
         k1 = self.ds(self.data.state)
-        return dt*k1
+        return (dt, dt*k1)
     
 class RK4(Solver):
     def __call__(self,dt):
@@ -25,12 +34,57 @@ class RK4(Solver):
         k2 = self.ds(self.data.state+dt/2*k1)
         k3 = self.ds(self.data.state+dt/2*k2)
         k4 = self.ds(self.data.state+dt*k3)
-        return dt/6*(k1+2*k2+2*k3+k4)
+        return (dt, dt/6*(k1+2*k2+2*k3+k4))
+    
+class SympEuler(Solver):
+    def __call__(self,dt):
+        s = self.data.state
+        dv2 = self.a(s)*dt
+        v2 = self.v(s)+dv2
+        dx2 = v2*dt
+        return (dt,np.concatenate((dx2,dv2), axis=0))
+    
+class SympI4(Solver):
+    def __call__(self,dt):
+        cbt2 = 2**(1/3)
+        d1 = d3 = 1/(2-cbt2)
+        c1 = c4 = d1/2
+        c2 = c3 = (1-cbt2)*c1
+        d2 = -cbt2*d1
+        d4 = 0
+
+        s = self.data.state
+        v1 = self.v(s)
+        x1 = self.x(s)
+        v2 = v1+d1*self.a(x1)*dt
+        x2 = x1+c1*v2*dt
+        v3 = v2+d2*self.a(x2)*dt
+        x3 = x2+c2*v3*dt
+        v4 = v3+d3*self.a(x3)*dt
+        x4 = x3+c3*v4*dt
+        v5 = v4+d4*self.a(x4)*dt
+        x5 = x4+c4*v5*dt
+
+        return (dt,np.concatenate((x5-x1,v5-v1), axis=0))
+
+
+
+# class Verlet(Solver):
+#     def __init__(self,stateobj):
+#         super().__init__(stateobj)
+#         self.alt=0
+#     def __call__(self,dt):
+#         if self.alt==0:
+
+
     
 #Add More methods here
 
 def simulate(particles, solver, dt, tfinal=1.0):
     while particles.time<tfinal:
-        particles.state+=solver(dt)
+        #print(particles.state)
+        tmp=solver(dt)
         particles.time+=dt
+        particles.state+=tmp[1]
+        dt=tmp[0]
         particles.update_timeseries()

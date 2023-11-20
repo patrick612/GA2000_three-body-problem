@@ -3,16 +3,16 @@ import matplotlib.pyplot as plt
 
 #Set these
 M1 = 10
-M2 = 0.5
+M2 = 1
 G = 1
-a = 10
+a = 1
 
 R1=M2/(M1+M2)*a
 R2=M1/(M1+M2)*a
 Omega = (G*(M1+M2)/a**3)**0.5
 
-dims=((-20.0,20.0),(-20.0,20.0))
-N=1001
+dims=((-3.0,3.0),(-3.0,3.0))
+N=10001
 
 xs=np.linspace(*dims[0],N)
 ys=np.linspace(*dims[1],N)
@@ -50,8 +50,7 @@ for i in range(1,15):
         if besteps<eps: break
 
 print(f"Lagrange points: {L_points}")
-
-plt.imshow(arr, vmin=-20.0, vmax=-1.0, extent=[*dims[0],*dims[1]])
+plt.imshow(arr, vmin=arr.min()/40, vmax=arr.max(), extent=[*dims[0],*dims[1]])
 plt.contour(x,y,arr,np.linspace(U(*L_points[0])-L1L3potdiff*3, U(*L_points[2])+L1L3potdiff*2,contourn*6-5), cmap='binary')
 plt.colorbar()
 plt.show()
