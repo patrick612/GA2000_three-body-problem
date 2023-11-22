@@ -12,7 +12,7 @@ class Solver:
     
     def a(self,state):
         xs=self.x(state)
-        f = np.zeros((self.data.n,3))
+        f = np.zeros((self.data.n,3),dtype=np.float64)
         for i in range(self.data.n):
             for j in range(self.data.n):
                 if i!=j:
@@ -66,17 +66,6 @@ class SympI4(Solver):
         x5 = x4+c4*v5*dt
 
         return (dt,np.concatenate((x5-x1,v5-v1), axis=0))
-
-
-
-# class Verlet(Solver):
-#     def __init__(self,stateobj):
-#         super().__init__(stateobj)
-#         self.alt=0
-#     def __call__(self,dt):
-#         if self.alt==0:
-
-
     
 #Add More methods here
 
