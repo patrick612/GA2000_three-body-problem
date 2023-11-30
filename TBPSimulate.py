@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from TBPConsts import *
 class Solver:
     def __init__(self,stateobj):
@@ -72,6 +73,16 @@ class SympI4(Solver):
 def simulate(particles, solver, dt, tfinal=1.0):
     while particles.time<tfinal:
         #print(particles.state)
+        tmp=solver(dt)
+        particles.time+=dt
+        particles.state+=tmp[1]
+        dt=tmp[0]
+        particles.update_timeseries()
+
+def realtimesim(particles, solver, dt):
+    t  = time.time_ns()
+    print(t)
+    while time.time_ns()-t<1e9/40:
         tmp=solver(dt)
         particles.time+=dt
         particles.state+=tmp[1]
