@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 
-def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, spac = None):
+def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, spac = None, perc = False):
     r = r1 + r2
     omega = np.sqrt(m1/(r**2 * r2))
     if spac ==None:
@@ -50,8 +50,12 @@ def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, spac = None):
     x2_err = np.abs(x2_true - x2)
     y2_err = np.abs(y2_true - y2)
 
-    p1_err = np.sqrt(x1_err**2 + y1_err**2)
-    p2_err = np.sqrt(x2_err**2 + y2_err**2)
+    if perc == False:
+        p1_err = np.sqrt(x1_err**2 + y1_err**2)
+        p2_err = np.sqrt(x2_err**2 + y2_err**2)
+    else:
+        p1_err = np.sqrt(x1_err**2 + y1_err**2)/np.sqrt(x1_true**2 + y1_true**2)
+        p2_err = np.sqrt(x2_err**2 + y2_err**2)/np.sqrt(x2_true**2 + y1_true**2)
 
     return p1_err, p2_err, times[::spac]
 
