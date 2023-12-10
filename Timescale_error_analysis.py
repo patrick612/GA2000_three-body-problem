@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 
 
 
-
-def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, spac = None, perc = False):
+def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, method = None, spac = None, perc = False):
     r = r1 + r2
     omega = np.sqrt(m1/(r**2 * r2))
     if spac ==None:
@@ -14,8 +13,17 @@ def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, spac = None, perc = Fals
     ps1 = ParticleData()
     ps1 += [m1,[r1,0,0],[0,-1*r1*omega,0]]
     ps1 += [m2, [-r2, 0, 0], [0, r2*omega, 0]]
-
-    solve = RK4(ps1)
+    
+    if method == None or method == 'RK4':
+        solve = RK4(ps1)
+    elif method == 'EulerFirst':
+        solve = EulerFirst(ps1)
+    elif method == 'SympEuler':
+        solve = SympEuler(ps1)
+    elif method == 'SympEuler':
+        solve = SympI4(ps1)
+        
+    
     simulate(ps1, solve, time_scale, tfinal=t_f)
 
     ts = np.array(ps1.timeseries.ts)
@@ -58,36 +66,22 @@ def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, spac = None, perc = Fals
         p2_err = np.sqrt(x2_err**2 + y2_err**2)/np.sqrt(x2_true**2 + y1_true**2)
 
     return p1_err, p2_err, times[::spac]
-
-#circular orbit of different masses
-m1 = 10
-r1 = 10
-m2 = 5
-r2 = 20
-p1err, p2err, times = circular_orbit_err(m1, r1, m2, r2, 0.0001, np.pi*2, spac = 1) 
-plt.plot(times, p1err)
-plt.xlabel('time')
-plt.ylabel('||actual position - calculate position||')
-plt.title('Error of Particle 1')
-
-plt.plot(times, p2err)
-plt.xlabel('time')
-plt.ylabel('||actual position - calculate position||')
-plt.title('Error of Particle 2')
-
-#circular orbit of same masses
-m1 = 10
-r1 = 10
-m2 = 10
-r2 = 10
-
-p1err, p2err, times = circular_orbit_err(m1, r1, m2, r2, 0.0001, np.pi*2, spac = 1) 
-plt.plot(times, p1err)
-plt.xlabel('time')
-plt.ylabel('||actual position - calculate position||')
-plt.title('Error of Particle 1')
-
-plt.plot(times, p2err)
-plt.xlabel('time')
-plt.ylabel('||actual position - calculate position||')
-plt.title('Error of Particle 2')
+    
+def time_step_error(time_step_list, t_f, method):
+    m1 = 10
+    r1 = 10
+    m2 = 10
+    r2 = 10
+    r = r1 + r2
+    omega = np.sqrt(m1/(r**2 * r2))
+    period = np.pi*2/omega
+    t_f = t_f * period
+    
+    p1_err_list = []
+    p2_err_list = []
+    for step_size in time_step_list:
+        p1err, p2err, times = circular_orbit_err(m1, r1, m2, r2, step_size, t_f, perc=True, method=method, spac = 1)
+        p1_err_list.append(p1err[-1])
+        p2_err_list.append(p2err[-1])
+    
+    return p1_err_list, p2_err_list
