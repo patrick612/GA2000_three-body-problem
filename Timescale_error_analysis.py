@@ -20,7 +20,7 @@ def circular_orbit_err(m1, r1, m2, r2, time_scale, t_f, method = None, spac = No
         solve = EulerFirst(ps1)
     elif method == 'SympEuler':
         solve = SympEuler(ps1)
-    elif method == 'SympEuler':
+    elif method == 'SympI4':
         solve = SympI4(ps1)
         
     
