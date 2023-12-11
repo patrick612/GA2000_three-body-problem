@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import Timescale_error_analysis
 from fractions import Fraction
+
 
 #########RK4
 #RK4 5e-5 to 1e-1 of period
