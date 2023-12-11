@@ -31,10 +31,11 @@ class EulerFirst(Solver):
     
 class RK4(Solver):
     def __call__(self,dt):
-        k1 = self.ds(self.data.state)
-        k2 = self.ds(self.data.state+dt/2*k1)
-        k3 = self.ds(self.data.state+dt/2*k2)
-        k4 = self.ds(self.data.state+dt*k3)
+        s=self.data.state
+        k1 = self.ds(s)
+        k2 = self.ds(s+dt/2*k1)
+        k3 = self.ds(s+dt/2*k2)
+        k4 = self.ds(s+dt*k3)
         return (dt, dt/6*(k1+2*k2+2*k3+k4))
     
 class SympEuler(Solver):
@@ -83,9 +84,32 @@ class RK45(Solver):
     def __init__(self,stateobj,eps):
         super().__init__(stateobj)
         self.eps = eps
+        self.acoeff = np.array([[1/4,0,0,0,0,0],
+                           [3/32,9/32,0,0,0,0],
+                           [1932/2197,-7200/2197,7296/2197,0,0,0],
+                           [439/216,-8,3680/513,-845/4104,0,0],
+                           [-8/27,2,3544/2565,1859/4104,-11/40,0]],
+                           dtype=np.float64)
+
+        self.b4th = np.array([25/216,0,1408/2565,2197/4104,-1/5,0],dtype=np.float64)
+        self.b5th = np.array([16/135,0,6656/12825,28561/56430,-9/50,2/55],dtype=np.float64)
+
+    def compnext(self,dt):
+        s = self.data.state
+        k = np.zeros((6,*s.shape))
+        k[0] = self.ds(self.data.state)
+        for i in range(1,6):
+            k[i] = self.ds(s+np.sum(k*self.acoeff[i-1][:,None,None],axis=0)*dt)
+        return (np.sum(k*self.b4th[:,None,None],axis=0)*dt,np.sum(k*self.b5th[:,None,None],axis=0)*dt)
 
     def __call__(self,dt):
-        return
+        er = 1e70
+        while er>self.eps:
+            ds4th,ds5th = self.compnext(dt)
+            er = np.sum(np.abs(ds4th-ds5th))
+            dt *= 0.9*(self.eps/er)**0.2
+        return (dt,ds4th)
+
     
 #Add More methods here
 
