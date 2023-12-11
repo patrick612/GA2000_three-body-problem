@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import Timescale_error_analysis
+from Timescale_error_analysis import *
 from fractions import Fraction
 
 
