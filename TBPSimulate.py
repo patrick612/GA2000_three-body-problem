@@ -45,14 +45,11 @@ class SympEuler(Solver):
         dx2 = v2*dt
         return (dt,np.concatenate((dx2,dv2), axis=0))
     
-class SympI4(Solver):
+class Verlet(Solver):
     def __call__(self,dt):
-        cbt2 = 2**(1/3)
-        d1 = d3 = 1/(2-cbt2)
-        c1 = c4 = d1/2
-        c2 = c3 = (1-cbt2)*c1
-        d2 = -cbt2*d1
-        d4 = 0
+        d1 = d2 = 1/2
+        c1 = 1
+        c2 = 0
 
         s = self.data.state
         v1 = self.v(s)
@@ -61,12 +58,34 @@ class SympI4(Solver):
         x2 = x1+c1*v2*dt
         v3 = v2+d2*self.a(x2)*dt
         x3 = x2+c2*v3*dt
-        v4 = v3+d3*self.a(x3)*dt
-        x4 = x3+c3*v4*dt
-        v5 = v4+d4*self.a(x4)*dt
-        x5 = x4+c4*v5*dt
 
-        return (dt,np.concatenate((x5-x1,v5-v1), axis=0))
+        return (dt,np.concatenate((x3-x1,v3-v1), axis=0))
+    
+class SympI4(Solver):
+    def __init__(self,stateobj):
+        super().__init__(stateobj)
+        cbt2 = 2**(1/3)
+        self.d = [0,1/(2-cbt2),-cbt2/(2-cbt2),1/(2-cbt2)]
+        self.c = [self.d[3]/2,(1-cbt2)*self.d[3]/2,(1-cbt2)*self.d[3]/2,self.d[3]/2]
+
+    def __call__(self,dt):
+
+        s = self.data.state
+        vi = v = self.v(s)
+        xi = x = self.x(s)
+        for i in range(4):
+            v = v+self.d[i]*self.a(x)*dt
+            x = x+self.c[i]*v*dt
+
+        return (dt,np.concatenate((x-xi,v-vi), axis=0))
+    
+class RK45(Solver):
+    def __init__(self,stateobj,eps):
+        super().__init__(stateobj)
+        self.eps = eps
+
+    def __call__(self,dt):
+        return
     
 #Add More methods here
 
@@ -81,7 +100,6 @@ def simulate(particles, solver, dt, tfinal=1.0):
 
 def realtimesim(particles, solver, dt):
     t  = time.time_ns()
-    print(t)
     while time.time_ns()-t<1e9/40:
         tmp=solver(dt)
         particles.time+=dt

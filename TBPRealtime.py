@@ -22,16 +22,16 @@ fig = plt.figure()
 ax = fig.add_subplot()
 
 def update(frame):
-    realtimesim(ps, solv, 0.0001)
+    realtimesim(ps, solv, 0.001)
     ax.cla()
     for p in range(ps.state.shape[0]//2):
-        ts = np.array(ps.timeseries.ts)
+        #ts = np.array(ps.timeseries.ts)
         poss = ps.timeseries.pos(p,spac=50)
-        poss = poss[max(0,len(poss)-40):]
+        poss = poss[max(0,len(poss)-400):]
         xs = [i[0] for i in poss]
         ys = [i[1] for i in poss]
-        ax.scatter(xs,ys, sizes=ts/max(ts)*50)
-        print(xs)
+        zs = [i[2] for i in poss]
+        ax.scatter(xs,ys, sizes=10/np.arange(len(xs),0,-1)+0.5)
     return ()
 
 ani = anim.FuncAnimation(fig, update, interval=0.001,blit=True)

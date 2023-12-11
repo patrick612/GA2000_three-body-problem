@@ -60,11 +60,11 @@ class Timeseries:
                 for i in range(self.data.n):
                     for j in range(i+1,self.data.n):
                         dij = xs[j]-xs[i]
-                        u+=G*self.data.masses[j]*self.data.masses[i]/(np.linalg.norm(dij))
+                        u-=G*self.data.masses[j]*self.data.masses[i]/(np.linalg.norm(dij))
             else:
                 for i in range(self.data.n):
                     din = xs[n]-xs[i]
-                    u+=G*self.data.masses[n]*self.data.masses[i]/(np.linalg.norm(din))
+                    u-=G*self.data.masses[n]*self.data.masses[i]/(np.linalg.norm(din))
             U+=[u]
         return U
         

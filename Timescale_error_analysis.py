@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from TBPConsts import *
+from TBPData import *
+from TBPSimulate import *
 
 
 
