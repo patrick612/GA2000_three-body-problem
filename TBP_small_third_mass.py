@@ -7,6 +7,9 @@ from TBPConsts import *
 from TBPData import *
 from TBPSimulate import *
 
+#init_list = [[m1, [x1,y1,z1]], [m2, [x2,y2,z2]], [m3, [x3,y3,z3]]
+# the second entry to iniit_list has to be the heavy body
+# given masses and initial velocity, function finds a velocity for circular orbit and updates the initial value list
 def init_velo_circular(init_list, omega = False):
     m1 = init_list[0][0]
     r1x = init_list[0][1][0]
@@ -54,6 +57,7 @@ def init_velo_circular(init_list, omega = False):
     if omega == True:
         return init_l, omega12, omega32
 
+#finds trajectory for each masses and returns its positions in time
 def TBP_circular(init_list, time_scale, t_f, method = None, spac = None):
 
     if spac ==None:
@@ -104,6 +108,7 @@ def TBP_circular(init_list, time_scale, t_f, method = None, spac = None):
     
     return p1_pos, p2_pos, p3_pos, ts
 
+#tests different initial position of the third body and returns each body's radius in time
 def ejected(x3_start, x3_end, steps, m3, period_factor, init_list, pos_data =False):
     step_list = np.linspace(x3_start, x3_end, steps)
     q1_list = []
@@ -158,8 +163,7 @@ def ejected(x3_start, x3_end, steps, m3, period_factor, init_list, pos_data =Fal
     else:
         return q1_radii, q3_radii, step_list, time_list
     
-
-
+#given radii data, it will pick out the maximum radius and return list of max radii and the corresponding list of initial positions 
 def r_vs_w(q1_radii, q3_radii, step_list):
     q1_max = []
     q3_max = []
