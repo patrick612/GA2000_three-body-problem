@@ -118,3 +118,13 @@ class ParticleData:
 
     def update_timeseries(self):
         self.timeseries+=[self.time,np.copy(self.state)]
+
+
+def write_timeseries(tsobj, file):
+    print(tsobj.states[-1])
+    with open(file,"wb+") as wf:
+        np.save(wf,np.array(tsobj.ts))
+        np.save(wf,np.stack(tsobj.states))
+
+def load_timeseries(file):
+    return np.load(file)

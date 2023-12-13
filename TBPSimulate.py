@@ -1,9 +1,11 @@
 import numpy as np
 import time
 from TBPConsts import *
+from TBPData import *
 class Solver:
-    def __init__(self,stateobj):
+    def __init__(self,stateobj,frameomega=0.0):
         self.data = stateobj
+        self.frameomega=frameomega
 
     def x(self,state):
         return state[:self.data.n]
@@ -13,12 +15,19 @@ class Solver:
     
     def a(self,state):
         xs=self.x(state)
+        #Reduced force AKA acceleration
         f = np.zeros((self.data.n,3),dtype=np.float64)
         for i in range(self.data.n):
             for j in range(self.data.n):
                 if i!=j:
                     dij = xs[j]-xs[i]
                     f[i]+=G*self.data.masses[j]*dij/(np.linalg.norm(dij))**3
+            if self.frameomega:
+                vs=self.v(state)
+                #Coriolis
+                f[i]-=2*self.frameomega*np.array([-vs[i][1],vs[i][0],0])
+                #Centrifugal
+                f[i]+=self.frameomega**2*np.array([xs[i][0],xs[i][1],0])
         return f
 
     def ds(self,state):
@@ -63,8 +72,8 @@ class Verlet(Solver):
         return (dt,np.concatenate((x3-x1,v3-v1), axis=0))
     
 class SympI4(Solver):
-    def __init__(self,stateobj):
-        super().__init__(stateobj)
+    def __init__(self,stateobj,frameomega=0.0):
+        super().__init__(stateobj,frameomega=frameomega)
         cbt2 = 2**(1/3)
         self.d = [0,1/(2-cbt2),-cbt2/(2-cbt2),1/(2-cbt2)]
         self.c = [self.d[3]/2,(1-cbt2)*self.d[3]/2,(1-cbt2)*self.d[3]/2,self.d[3]/2]
@@ -81,8 +90,8 @@ class SympI4(Solver):
         return (dt,np.concatenate((x-xi,v-vi), axis=0))
     
 class RK45(Solver):
-    def __init__(self,stateobj,eps):
-        super().__init__(stateobj)
+    def __init__(self,stateobj,eps,frameomega=0.0):
+        super().__init__(stateobj,frameomega=frameomega)
         self.eps = eps
         self.acoeff = np.array([[1/4,0,0,0,0,0],
                            [3/32,9/32,0,0,0,0],
@@ -107,13 +116,16 @@ class RK45(Solver):
         while er>self.eps:
             ds4th,ds5th = self.compnext(dt)
             er = np.sum(np.abs(ds4th-ds5th))
-            dt *= 0.9*(self.eps/er)**0.2
+            #In case error is zero
+            if er:
+                dt *= 0.9*(self.eps/er)**0.2
         return (dt,ds4th)
 
     
 #Add More methods here
 
-def simulate(particles, solver, dt, tfinal=1.0):
+def simulate(particles, solver, dt, tfinal=1.0, ckpt_spac=1000):
+    i=0
     while particles.time<tfinal:
         #print(particles.state)
         tmp=solver(dt)
@@ -121,6 +133,9 @@ def simulate(particles, solver, dt, tfinal=1.0):
         particles.state+=tmp[1]
         dt=tmp[0]
         particles.update_timeseries()
+        i+=1
+        if i%ckpt_spac==0:
+            write_timeseries(particles.timeseries, "test.txt")
 
 def realtimesim(particles, solver, dt):
     t  = time.time_ns()
@@ -130,3 +145,4 @@ def realtimesim(particles, solver, dt):
         particles.state+=tmp[1]
         dt=tmp[0]
         particles.update_timeseries()
+        print(particles.state)
