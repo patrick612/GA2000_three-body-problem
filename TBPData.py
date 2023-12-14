@@ -121,10 +121,14 @@ class ParticleData:
 
 
 def write_timeseries(tsobj, file):
-    print(tsobj.states[-1])
-    with open(file,"wb+") as wf:
-        np.save(wf,np.array(tsobj.ts))
-        np.save(wf,np.stack(tsobj.states))
+    np.savez(file,ts = np.array(tsobj.ts),states = np.stack(tsobj.states),masses = np.array(tsobj.data.masses))
 
 def load_timeseries(file):
-    return np.load(file)
+    dat = np.load(file+".npz")
+    tmpdat = ParticleData()
+    tmpdat.masses = list(dat["masses"])
+    tmpdat.n = len(dat["masses"])
+    tseries = Timeseries(tmpdat)
+    tseries.ts = list(dat["ts"])
+    tseries.states = list(dat["states"])
+    return tseries

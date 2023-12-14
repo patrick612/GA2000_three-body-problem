@@ -115,7 +115,7 @@ class RK45(Solver):
         er = 1e70
         while er>self.eps:
             ds4th,ds5th = self.compnext(dt)
-            er = np.sum(np.abs(ds4th-ds5th))
+            er = np.sum((ds4th-ds5th)**2)**0.5
             #In case error is zero
             if er:
                 dt *= 0.9*(self.eps/er)**0.2
@@ -124,18 +124,23 @@ class RK45(Solver):
     
 #Add More methods here
 
-def simulate(particles, solver, dt, tfinal=1.0, ckpt_spac=1000):
+def simulate(particles, solver, dt, tfinal=1.0, update_spac=1000, save_inter = 0, save_file="tseriesdata"):
     i=0
     while particles.time<tfinal:
-        #print(particles.state)
         tmp=solver(dt)
         particles.time+=dt
         particles.state+=tmp[1]
         dt=tmp[0]
         particles.update_timeseries()
         i+=1
-        if i%ckpt_spac==0:
-            write_timeseries(particles.timeseries, "test.txt")
+        if i%update_spac==0:
+            print(f't = {round(particles.time,5)}, {particles.time/tfinal*100}% done')
+            print ("\033[A\033[A")
+        if save_inter and i%save_inter==0:
+            write_timeseries(particles.timeseries, save_file)
+    print(f't = {round(particles.time,5)}, {particles.time/tfinal*100}% done')
+    print ("\033[A\033[A")
+    write_timeseries(particles.timeseries, save_file)
 
 def realtimesim(particles, solver, dt):
     t  = time.time_ns()
@@ -145,4 +150,3 @@ def realtimesim(particles, solver, dt):
         particles.state+=tmp[1]
         dt=tmp[0]
         particles.update_timeseries()
-        print(particles.state)
