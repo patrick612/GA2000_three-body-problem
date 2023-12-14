@@ -124,7 +124,7 @@ class RK45(Solver):
     
 #Add More methods here
 
-def simulate(particles, solver, dt, tfinal=1.0, update_spac=1000, save_inter = 0, save_file="tseriesdata"):
+def simulate(particles, solver, dt, tfinal=1.0, updatespac=1000, saveinter = 0, savefile="tseriesdata"):
     i=0
     while particles.time<tfinal:
         tmp=solver(dt)
@@ -133,14 +133,14 @@ def simulate(particles, solver, dt, tfinal=1.0, update_spac=1000, save_inter = 0
         dt=tmp[0]
         particles.update_timeseries()
         i+=1
-        if i%update_spac==0:
+        if i%updatespac==0:
             print(f't = {round(particles.time,5)}, {particles.time/tfinal*100}% done')
             print ("\033[A\033[A")
-        if save_inter and i%save_inter==0:
-            write_timeseries(particles.timeseries, save_file)
+        if saveinter and i%saveinter==0:
+            write_timeseries(particles.timeseries, savefile)
     print(f't = {round(particles.time,5)}, {particles.time/tfinal*100}% done')
     print ("\033[A\033[A")
-    write_timeseries(particles.timeseries, save_file)
+    write_timeseries(particles.timeseries, savefile)
 
 def realtimesim(particles, solver, dt):
     t  = time.time_ns()

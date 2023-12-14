@@ -38,16 +38,54 @@ class Test:
         for dt in [1,0.1,1e-4,1e-8]:
             #Test all solvers to see if they handle it
             for c in grabsolvers():
+                args = []
+                if c==RK45: args = [0.0001]
                 ps = ParticleData()
                 ps+=[0,[0,0,0],[1,0,0]]
                 ps+=[0,[4,5,6],[1,-5,20]]
-                s = c(ps)
+                s = c(ps,*args)
                 tmp=s(dt)
                 #Expected positions
                 expect = np.array([[dt,0,0],[4+dt,5-5*dt,6+20*dt],[1,0,0],[1,-5,20]],dtype=np.float64)
                 if not np.isclose(ps.state+tmp[1],expect,atol=1e-15).all():
                     passed=False
         return passed
+    
+    @staticmethod
+    def rotatingaccel1():
+        ps = ParticleData()
+        ps+=[0,[5,0,0],[0,0,0]]
+        s = Solver(ps,frameomega=3.0)
+        acc = s.a(ps.state)
+        expectacc = np.array([45.0,0.0,0.0])
+        return np.isclose(acc,expectacc,atol=1e-15).all()
+    
+    @staticmethod
+    def rotatingaccel2():
+        ps = ParticleData()
+        ps+=[0,[0,-5,0],[0,0,0]]
+        s = Solver(ps,frameomega=3.0)
+        acc = s.a(ps.state)
+        expectacc = np.array([0.0,-45.0,0.0])
+        return np.isclose(acc,expectacc,atol=1e-15).all()
+    
+    @staticmethod
+    def rotatingaccel3():
+        ps = ParticleData()
+        ps+=[0,[0,1,0],[-3.0,0.0,0]]
+        s = Solver(ps,frameomega=2.0)
+        acc = s.a(ps.state)
+        expectacc = np.array([0.0,4.0,0.0])+np.array([0.0,12.0,0.0])
+        return np.isclose(acc,expectacc,atol=1e-15).all()
+    
+    @staticmethod
+    def rotatingaccel4():
+        ps = ParticleData()
+        ps+=[0,[0,1,0],[0.0,3.0,0]]
+        s = Solver(ps,frameomega=2.0)
+        acc = s.a(ps.state)
+        expectacc = np.array([0.0,4.0,0.0])+np.array([12.0,0.0,0.0])
+        return np.isclose(acc,expectacc,atol=1e-15).all()
 
     @staticmethod
     def testall():

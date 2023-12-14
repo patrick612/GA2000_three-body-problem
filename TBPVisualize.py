@@ -4,35 +4,23 @@ import matplotlib.animation as anim
 from TBPSimulate import *
 from TBPData import *
 from TBPConsts import *
+from TBPSetups import *
 
-ps = ParticleData()
-# ps+=[10,[-1/11,0,0],[0,1/11**0.5,0]]
-# ps+=[1,[10/11,0,0],[0,-10/11**0.5,0]]
-# ps+=[0,[1.25608290849,0,0],[0,-1.25608290849*11**0.5,0]]
-# ps+=[0,[0.408859,0.866013,0],[2.87224018457,-1.35603189516,0]]
-
-ps+=[1,[-1.0,0.0,0.0],[0.306893,0.125507,0.0]]
-ps+=[1,[1.0,0.0,0.0],[0.306893,0.125507,0.0]]
-ps+=[1,[0.0,0.0,0.0],[(-2)*0.306893,(-2)*0.125507,0.0]]
-
-print(ps.state)
-
-solv = RK4(ps)
-
-simulate(ps, solv, 0.0001, tfinal=np.pi*4)
-
-for p in range(ps.state.shape[0]//2):
-    ts = np.array(ps.timeseries.ts)
-    poss = ps.timeseries.pos(p,spac=30)
-    xs = [i[0] for i in poss]
-    ys = [i[1] for i in poss]
-    plt.scatter(xs,ys, sizes=ts/max(ts))
-
-
-plt.axis('equal')
-plt.show()
-
-E = ps.timeseries.energy(spac=20)
-E = ps.timeseries.energy(spac=20)
-plt.plot(E)
-plt.show()
+def display(timeseries, dimension=2, spac=1):
+    fig = plt.figure('')
+    if dimension==2:
+        ax = fig.add_subplot()
+        ax.set_aspect('equal', adjustable='box')
+    elif dimension==3:
+        ax = fig.add_subplot(projection='3d')
+    for p in range(timeseries.data.n):
+        ts = np.array(timeseries.ts)
+        poss = timeseries.pos(p,spac=spac)
+        xs = [i[0] for i in poss]
+        ys = [i[1] for i in poss]
+        zs = [i[2] for i in poss]
+        if dimension==2:
+            ax.scatter(xs,ys, sizes=10/np.arange(len(xs),0,-1)+0.5)
+        elif dimension==3:
+            ax.scatter(xs,ys,zs, sizes=10/np.arange(len(xs),0,-1)+0.5)
+    plt.show()
